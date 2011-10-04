@@ -29,7 +29,7 @@ class RecordRelationsPlugin extends Omeka_Plugin_Abstract
                 `name` varchar(100) NOT NULL,
                 `description` text,
                 `namespace_prefix` varchar(100) NOT NULL,
-                `namespace_uri` varchar(200) DEFAULT NULL,
+                `namespace_uri` varchar(200) NOT NULL,
                 `custom` BOOLEAN NOT NULL,
                 PRIMARY KEY (`id`)
             ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";

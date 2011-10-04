@@ -24,13 +24,13 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         return $select;
     }
 
-    public function findSubjectRecordsByParams($params)
+    public function findSubjectRecordsByParams($params, $forSelectForm = false)
     {
         if(!isset($params['subject_record_type'])) {
             throw new Exception("subject_record_type must be passed in parameters");
         }
         $db = $this->getDb();
-        $objectTable = $db->getTable($params['object_record_type']);
+        $subjectTable = $db->getTable($params['subject_record_type']);
         $select = $objectTable->getSelect();
 
         foreach($params as $column=>$value) {
@@ -40,10 +40,18 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         $select->join(array('rr'=>$db->RecordRelationsRelation),
                       "rr.subject_id = $alias.id", array()
                       );
-        return $objectTable->fetchObjects($select);
+        $subjects = $subjectTable->fetchObjects($select);
+        if($forSelectForm) {
+            $returnArray = array();
+            foreach($subjects as $subject) {
+                $returnArray[$subject->id] = $subject;
+            }
+            return $returnArray;
+        }
+        return $subjects;
     }
     
-    public function findObjectRecordsByParams($params)
+    public function findObjectRecordsByParams($params, $forSelectForm = false)
     {
         if(!isset($params['object_record_type'])) {
             throw new Exception("object_record_type must be passed in parameters");
@@ -59,7 +67,15 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         $select->join(array('rr'=>$db->RecordRelationsRelation),
                       "rr.object_id = $alias.id", array()
                       );
-        return $objectTable->fetchObjects($select);
+        $objects = $objectTable->fetchObjects($select);
+        if($indexById) {
+            $returnArray = array();
+            foreach($objects as $object) {
+                $returnArray[$object->id] = $object;
+            }
+            return $returnArray;
+        }
+        return $objects;
     }
 
 }

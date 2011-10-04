@@ -9,6 +9,7 @@ abstract class RelatableRecord extends Omeka_Record {
     protected $subject_record_type;
     protected $object_record_type;
     protected $_isSubject; // false if this will be the object of a relation
+    protected $public = true;
     
     protected function construct() {
         $this->_relation = new RecordRelationsRelation();

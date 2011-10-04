@@ -43,6 +43,18 @@ echo $html;
 }
 
 /**
+ * Look up a property id by namespace and local_part
+ *
+ */
+
+function record_relations_property_id($namespace, $local_part)
+{
+    
+    $prop = get_db()->getTable('RecordRelationsProperty')->findByVocabAndPropertyName($namespace, $local_part);
+    return $prop->id;
+}
+
+/**
  *
  * Install vocabularies and properties
  * @param $data
