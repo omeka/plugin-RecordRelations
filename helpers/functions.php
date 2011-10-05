@@ -51,6 +51,9 @@ function record_relations_property_id($namespace, $local_part)
 {
     
     $prop = get_db()->getTable('RecordRelationsProperty')->findByVocabAndPropertyName($namespace, $local_part);
+    if(empty($prop)) {
+        return false;
+    }
     return $prop->id;
 }
 
