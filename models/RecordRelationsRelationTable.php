@@ -2,11 +2,12 @@
 
 class RecordRelationsRelationTable extends Omeka_Db_Table
 {
-    
     protected $_alias = 'rr';
+    protected $_targetAlias;
     
     public function applySearchFilters($select, $params)
     {
+        //ignore any params that don't apply to relations
         $paramNames = array('id',
                         'subject_id',
                         'property_id',
@@ -24,83 +25,112 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         return $select;
     }
 
-    public function findSubjectRecordsByParams($params, $ops=array())
+    /**
+     *
+     * Applies filters on the subject or object record type
+     * @param $select
+     * @param array $params
+     */
+    public function applyTargetSearchFilters($select, $params)
+    {
+        $select->join(array('rr'=>$db->RecordRelationsRelation),
+                      "rr.subject_id = {$this->_targetAlias}.id", array()
+                      );
+        foreach($params as $column=>$value) {
+            $select->where("{$this->_targetAlias}.$column = ?", $value);
+        }
+        return $select;
+    }
+    /**
+     *
+     * Modifies the query options
+     * @param $select
+     * @param array $queryOps
+     */
+    public function applyQueryOptions($select, $queryOps)
+    {
+        if(isset($queryOps['limit']) && isset($queryOps['offset'])) {
+            $select->limit($queryOps['limit'], $queryOps['offset']);
+        }
+        if(isset($queryOps['limit']) && !isset($queryOps['offset'])) {
+            $select->limit($queryOps['limit']);
+        }
+        return $select;
+    }
+    /**
+     * Finds records that are the subject of the record relations
+     *
+     * @param array $relationParams Filters for the relations to find
+     * @param array $queryOps Options to modify the query, like limits.
+     * @param array $subjectParams Filters on the subject record type
+     * @throws Exception
+     */
+    
+    public function findSubjectRecordsByParams($relationParams, $queryOps= array(), $subjectParams = array())
     {
         if(!isset($params['subject_record_type'])) {
             throw new Exception("subject_record_type must be passed in parameters");
         }
-        $db = $this->getDb();
-        $subjectTable = $db->getTable($params['subject_record_type']);
-        
-        if(isset($ops['count']) && $ops['count']) {
-            $select = $subjectTable->getSelectForCount();
-        } else {
-            $select = $subjectTable->getSelect();
-        }
-        
-        foreach($params as $column=>$value) {
-            $select->where("rr.$column = ? ", $value);
-        }
-        $alias = $subjectTable->getTableAlias();
-        $select->join(array('rr'=>$db->RecordRelationsRelation),
-                      "rr.subject_id = $alias.id", array()
-                      );
-        if(isset($ops['count']) && $ops['count']) {
-            return $db->fetchOne($select);
-        }
-        $subjects = $subjectTable->fetchObjects($select);
-        if(isset($ops['indexById']) && $ops['indexById']) {
-            $returnArray = array();
-            foreach($subjects as $subject) {
-                $returnArray[$subject->id] = $subject;
-            }
-            return $returnArray;
-        }
-        return $subjects;
+        return $this->_findTargetRecordsByParams($relationsParams, $queryOps, $subjectParams, $relationParams['subject_record_type']);
     }
     
-    public function findObjectRecordsByParams($params)
+    /**
+     * Finds records that are the obeject of the record relations
+     *
+     * @param array $relationParams Filters for the relations to find
+     * @param array $queryOps Options to modify the query, like limits.
+     * @param array $subjectParams Filters on the object record type
+     * @throws Exception
+     */
+    
+    public function findObjectRecordsByParams($relationParams, $queryOps=array(), $objectParams=array())
     {
-        if(!isset($params['object_record_type'])) {
+        if(!isset($relationParams['object_record_type'])) {
             throw new Exception("object_record_type must be passed in parameters");
         }
+        return $this->_findTargetRecordsByParams($relationsParams, $queryOps, $objectParams, $relationParams['object_record_type']);
+    }
+    
+    /**
+     *
+     * Abstracts out the jobs of findObjectRecordsByParams and findSubjectRecordsByParams
+     * @param array $relationParams Filters for the relations to find
+     * @param array $queryOps Options to modify the query, like limits.
+     * @param array $subjectParams Filters on the object record type
+     * @param string $targetType The target table name (either subject or object record type)
+     */
+    
+    private function _findTargetRecordsByParams($relationsParams, $queryOps, $targetParams, $targetType)
+    {
         $db = $this->getDb();
-        $objectTable = $db->getTable($params['object_record_type']);
-        /*
-        if(isset($ops['count']) && $ops['count']) {
-            $select = $objectTable->getSelectForCount($params);
+        $targetTable = $db->getTable($targetType);
+        $this->_targetAlias = $targetTable->getTableAlias();
+        
+        //need to get the select here based on whether it is for count
+        if(isset($queryOps['count']) && $queryOps['count']) {
+            $select = $targetTable->getSelectForCount();
         } else {
-            $select = $objectTable->getSelect();
+            $select = $targetTable->getSelect();
         }
         
-        // */
-        $alias = $objectTable->getTableAlias();
-        $select = $objectTable->getSelect();
-
-        foreach($params as $column=>$value) {
-            $select->where("rr.$column = ? ", $value);
+        $select = $this->applySearchFilters($select, $queryOps);
+        $select = $this->applyTargetSearchFilters($select, $targetParams, $alias);
+        
+        //if it's a count query, need to execute the query a little differently and return
+        if(isset($queryOps['count']) && $queryOps['count']) {
+            return $db->fetchOne($select);
         }
-                
-        $select->join(array('rr'=>$db->RecordRelationsRelation),
-                      "rr.object_id = $alias.id", array()
-                      );
-      /*
-        if (isset($ops['limit'])) {
-            $select->limit($ops['limit']);
-        }
-// */
-
-        $objects = $objectTable->fetchObjects($select);
-
-        if(isset($ops['indexById']) && $ops['indexById']) {
+        
+        $targets = $targetTable->fetchObjects($select);
+        
+        //@TODO: might need to be moved to applyQueryOptions?
+        if(isset($queryOps['indexById']) && $queryOps['indexById']) {
             $returnArray = array();
-            foreach($objects as $object) {
-                $returnArray[$object->id] = $object;
+            foreach($targets as $target) {
+                $returnArray[$targett->id] = $targett;
             }
             return $returnArray;
         }
-        
-        return $objects;
+        return $targets;
     }
-
 }
