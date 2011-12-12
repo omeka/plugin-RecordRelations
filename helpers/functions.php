@@ -1,47 +1,5 @@
 <?php
 
-function record_relations_show_objects($record, $params = array())
-{
-    $params['subject_id'] = $record->id;
-    $params['subject_record_type'] = get_class($record);
-    $params['subject_id'] = 1;
-    $params['subject_record_type'] = 'User';
-    $db = get_db();
-    //dig up all the possible object_record_types and predicates
-    $rrTable = $db->getTable('RecordRelationsRelation');
-    $select = $rrTable->getSelect()
-      //  ->columns(array('object_record_type', 'property_id'))
-        ->where("subject_id = ?", $params['subject_id'])
-        ->where("subject_record_type = ?", $params['subject_record_type']);
-            
-  //  $relations = $select->query()->fetchAll();
-    $sql = "
-SELECT DISTINCT `omeka_record_relations_relations`.`object_record_type` , `omeka_record_relations_relations`.`property_id`
-FROM `omeka_record_relations_relations`
-WHERE `omeka_record_relations_relations`.`subject_id` = 1
-
-";
-$poPairs = $db->query($sql)->fetchAll();
-print_r($poPairs);
-$object_records = array();
-foreach($poPairs as $poPair) {
-    $params['property_id'] = $poPair['property_id'];
-    $params['object_record_type'] = $poPair['object_record_type'];
-    $object_records[$poPair['object_record_type']] = $rrTable->findObjectRecordsByParams($params);
-}
-$html = '';
-foreach($object_records as $type=>$records) {
-    $html .= "<h2>$type</h2>";
-    foreach($records as $record) {
-        $html .= "<p>" . $record->recordUri() . "</p>";
-    }
-    
-}
-echo $html;
-//return $object_records;
-    
-}
-
 /**
  * Look up a property id by namespace and local_part
  *

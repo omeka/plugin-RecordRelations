@@ -11,7 +11,7 @@ class RecordRelationsPropertyTable extends Omeka_Db_Table
             ->columns('rp.id')
             ->join(array('rv' => $db->RecordRelationsVocabulary),
                               "rv.namespace_uri = '$vocabUri'",
-                              'rv.id')
+                              array())
             ->where('rp.vocabulary_id = rv.id')
             ->where('local_part = ?', $predName);
         $prop = $this->fetchObject($select);

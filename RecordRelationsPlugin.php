@@ -18,9 +18,9 @@ class RecordRelationsPlugin extends Omeka_Plugin_Abstract
     protected $_hooks = array('install', 'uninstall');
     
     
-    public function install()
+    public function hookInstall()
     {
-        
+
         $db = get_db();
     
         $sql = "
@@ -67,7 +67,7 @@ class RecordRelationsPlugin extends Omeka_Plugin_Abstract
         
     }
     
-    public function uninstall()
+    public function hookUninstall()
     {
         $db = get_db();
         $sql = "DROP TABLE IF EXISTS `$db->RecordRelationsRelation` ";
@@ -90,7 +90,8 @@ class RecordRelationsPlugin
 {
     
     protected $_hooks = array('install', 'uninstall');
-    
+    protected $_filters = array();
+    protected $_options = array();
     
     public function install()
     {
