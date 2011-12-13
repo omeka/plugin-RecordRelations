@@ -90,7 +90,8 @@ class RecordRelationsPlugin
 {
     
     protected $_hooks = array('install', 'uninstall');
-    
+    protected $_filters = array();
+    protected $_options = array();
     
     public function install()
     {
