@@ -5,21 +5,18 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
     protected $_alias = 'rr';
     protected $_targetAlias;
     
+    public function findOne($params)
+    {
+        $select = $this->getSelectForFindBy($params);
+        return $this->fetchObject($select);
+    }
+    
     public function applySearchFilters($select, $params)
     {
-        //ignore any params that don't apply to relations
-        $paramNames = array('id',
-                        'subject_id',
-                        'property_id',
-                        'object_id',
-                        'subject_record_type',
-                        'object_record_type',
-                        'user_id',
-                        );
-                            
-        foreach($paramNames as $paramName) {
-            if (isset($params[$paramName])) {
-                $select->where('rr.' . $paramName . ' = ?', array($params[$paramName]));
+        $columns = $this->getColumns();
+        foreach($columns as $column) {
+            if(array_key_exists($column, $params)) {
+                $select->where($this->_alias . ". $column = ? ", $params[$column]);
             }
         }
         return $select;
@@ -65,7 +62,6 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
     
     public function findSubjectRecordsByParams($relationParams, $queryOps= array(), $subjectParams = array())
     {
-
         $db = $this->getDb();
         $targetTable = $db->getTable($relationParams['subject_record_type']);
         if(!isset($relationParams['subject_record_type'])) {
@@ -80,7 +76,7 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
     }
     
     /**
-     * Finds records that are the obeject of the record relations
+     * Finds records that are the object of the record relations
      *
      * @param array $relationParams Filters for the relations to find
      * @param array $queryOps Options to modify the query, like limits.
@@ -90,16 +86,16 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
     
     public function findObjectRecordsByParams($relationParams, $queryOps=array(), $objectParams=array())
     {
+
         $db = $this->getDb();
-        $targetTable = $db->getTable($relationParams['object_record_type']);
         if(!isset($relationParams['object_record_type'])) {
             throw new Exception("object_record_type must be passed in parameters");
         }
+        $targetTable = $db->getTable($relationParams['object_record_type']);
         $select = $this->getSelectForTargetRecords($relationParams, $targetTable, $queryOps, $objectParams);
         $select->join(array('rr'=>$db->RecordRelationsRelation),
                       "rr.object_id = {$this->_targetAlias}.id", array()
                       );
-        
         return $this->findTargetRecords($select, $targetTable, $queryOps);
     }
     
@@ -109,6 +105,7 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         if(isset($queryOps['count']) && $queryOps['count']) {
             return $this->getDb()->fetchOne($select);
         }
+_log($select);
         $targets = $targetTable->fetchObjects($select);
         
         //@TODO: might need to be moved to applyQueryOptions?
@@ -136,14 +133,13 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
     {
         $db = $this->getDb();
         $this->_targetAlias = $targetTable->getTableAlias();
-        
         //need to get the select here based on whether it is for count
         if(isset($queryOps['count']) && $queryOps['count']) {
             $select = $targetTable->getSelectForCount();
         } else {
             $select = $targetTable->getSelect();
         }
-        
+
         $select = $this->applySearchFilters($select, $relationParams);
 
         $select = $this->applyTargetSearchFilters($select, $targetParams);
