@@ -1,0 +1,49 @@
+== ABOUT ==
+
+RecordRelations does nothing by itself. It only provides a mechanism for other plugins to use to build
+relationships between other records in Omeka in a consistant way. It is modelled on Jim Safley's ItemRelations
+plugin.
+
+== STRUCTURE ==
+
+RecordRelations is heavily influenced by RDF, and is designed to work by creating triples of Omeka records and
+predicates, preferably predicates from RDF vocabularies. RecordRelations ships with FOAF, SIOC, Dublin Core,
+and FRBR predicates. The record_relations_install_properties function allows you to add your own terms.
+
+The RecordRelationsRelations table does the heavy lifting. Its columns are:
+id: primary key
+subject_id: Omeka record id of the subject of the triple
+property_id: id of the property in the RecordRelationsProperties table
+object_id: Omeka record id of the object of the triple
+subject_record_type: The model name of the subject Omeka record (e.g., Item, User)
+object_record_type: The model name of the object Omeka record (e.g., Item, User)
+timestamp: timestamp of when the relation was created (e.g., 2011-09-01 16:09:25 )
+user_id: the user who created the relation
+public: whether the relation is public
+
+== USAGE ==
+
+The canonical example of using RecordRelations is overriding Omeka's default behavior of allowing Items to be in only one Collection. 
+The MultiCollections plugin, which depends on RecordRelations, changes this behavior. When it is installed,
+it recreates the existing Item->Collection relationships roughly like so:
+
+$props = array(
+            'subject_record_type' => 'Item',
+            'object_record_type' => 'Collection',
+            'property_id' => record_relations_property_id(DCTERMS, 'isPartOf'),
+            'public' => true
+        );
+
+foreach($items as $item) {
+    $props['subject_id'] = $item->id;
+    if(!is_null($item->collection_id) && $item->collection_id != 0) {
+        $props['object_id'] = $item->collection_id;
+        $relation = new RecordRelationsRelation();
+        $relation->setProps($props);
+        $relation->save();
+    }   
+}    
+
+Adding an Item to an additional Collection, then, simply means adding another RecordRelationsRelation row 
+
+    
