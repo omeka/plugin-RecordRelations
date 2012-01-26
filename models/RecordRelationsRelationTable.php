@@ -4,13 +4,13 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
 {
     protected $_alias = 'rr';
     protected $_targetAlias;
-    
+
     public function findOne($params)
     {
         $select = $this->getSelectForFindBy($params);
         return $this->fetchObject($select);
     }
-    
+
     public function applySearchFilters($select, $params)
     {
         $columns = $this->getColumns();
@@ -59,7 +59,7 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
      * @param array $subjectParams Filters on the subject record type
      * @throws Exception
      */
-    
+
     public function findSubjectRecordsByParams($relationParams, $queryOps= array(), $subjectParams = array())
     {
         $db = $this->getDb();
@@ -71,10 +71,10 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         $select->join(array('rr'=>$db->RecordRelationsRelation),
                       "rr.subject_id = {$this->_targetAlias}.id", array()
                       );
-        
+
         return $this->findTargetRecords($select, $targetTable, $queryOps);
     }
-    
+
     /**
      * Finds records that are the object of the record relations
      *
@@ -83,7 +83,7 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
      * @param array $subjectParams Filters on the object record type
      * @throws Exception
      */
-    
+
     public function findObjectRecordsByParams($relationParams, $queryOps=array(), $objectParams=array())
     {
 
@@ -98,16 +98,16 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
                       );
         return $this->findTargetRecords($select, $targetTable, $queryOps);
     }
-    
+
     private function findTargetRecords($select, $targetTable, $queryOps = array())
     {
          //if it's a count query, need to execute the query a little differently and return
         if(isset($queryOps['count']) && $queryOps['count']) {
             return $this->getDb()->fetchOne($select);
         }
-_log($select);
+
         $targets = $targetTable->fetchObjects($select);
-        
+
         //@TODO: might need to be moved to applyQueryOptions?
         if(isset($queryOps['indexById']) && $queryOps['indexById']) {
             $returnArray = array();
@@ -117,9 +117,9 @@ _log($select);
             return $returnArray;
         }
         return $targets;
-        
+
     }
-    
+
     /**
      *
      * Abstracts out the jobs of findObjectRecordsByParams and findSubjectRecordsByParams
@@ -128,7 +128,7 @@ _log($select);
      * @param array $subjectParams Filters on the object record type
      * @param string $targetType The target table name (either subject or object record type)
      */
-    
+
     private function getSelectForTargetRecords($relationParams, $targetTable, $queryOps = array(), $targetParams = array() )
     {
         $db = $this->getDb();
@@ -144,6 +144,6 @@ _log($select);
 
         $select = $this->applyTargetSearchFilters($select, $targetParams);
         return $select;
-       
+
     }
 }
