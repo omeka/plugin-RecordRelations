@@ -1,19 +1,5 @@
 <?php
 return $formalVocabularies = array(
-    array(
-        'name' => 'Omeka',
-        'description' => 'Omeka-based relations',
-        'namespace_prefix' => 'omeka',
-        'namespace_uri' => OMEKA,
-        'properties' => array(
-            array(
-                'local_part' => 'memberOf',
-                'label' => 'Member of',
-                'description' => 'A sioc:Users foaf:Person is associated with an omeka:Institution '
-            )
-        )
-    ),
-
 
     array(
         'name' => 'Semantically Interlinked Online Communities',
@@ -30,6 +16,21 @@ return $formalVocabularies = array(
                 'local_part' => 'has_space',
                 'label' => 'has space',
                 'description' => 'The resource is in the object sioc:Space'
+            ),
+            array(
+                'local_part' => 'member_of',
+                'label' => 'member of',
+                'description' => 'A Usergroup that this UserAccount is a member of.'
+            ),
+            array(
+                'local_part' => 'has_member',
+                'label' => 'has member',
+                'description' => 'A UserAccount that is a member of this Usergroup.'
+            ),
+            array(
+                'local_part' => 'has_container',
+                'label' => 'has container',
+                'description' => 'The Container to which this Item belongs.'
             )
         )
     ),
