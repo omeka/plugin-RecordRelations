@@ -7,7 +7,7 @@
 
 function record_relations_property_id($namespace, $local_part)
 {
-    
+
     $prop = get_db()->getTable('RecordRelationsProperty')->findByVocabAndPropertyName($namespace, $local_part);
     if(empty($prop)) {
         return false;
@@ -73,5 +73,15 @@ function record_relations_install_properties($data) {
                 $propertyRecord->save();
             }
         }
+    }
+}
+
+
+function record_relations_delete_relations($params)
+{
+    $relTable = get_db()->getTable('RecordRelationsRelation');
+    $rels = $relTable->findBy($params);
+    foreach($rels as $rel) {
+        $rel->delete();
     }
 }
