@@ -22,28 +22,41 @@ class RecordRelationsRelation extends Omeka_Record
             $this->_setPropertyIdFromParts($this->namespace , $this->local_part);
         }
     }
-    
-    public function beforeSave()
+
+    public function save()
     {
-        parent::beforeSave();
+        //check to see if the triple already exists, from the same user
         if(empty($this->user_id)) {
             $currentUser = current_user();
             $this->user_id = $currentUser->id;
         }
+        $count = $this->getTable()->count(array(
+                                            'subject_id' => $this->subject_id,
+                                            'object_id' => $this->object_id,
+                                            'user_id' => $this->user_id,
+                                            'subject_record_type' => $this->subject_record_type,
+                                            'object_record_type' => $this->object_record_type,
+                                            'property_id' => $this->property_id
+                                        ));
+
+        if($count == 0) {
+            parent::save();
+        }
+
     }
-    
+
     public function deleteWithObject()
     {
         $this->_db->getTable($this->object_record_type)->find($this->object_id)->delete();
         $this->delete();
     }
-    
+
     public function deleteWithSubject()
     {
         $this->_db->getTable($this->subject_record_type)->find($this->subject_id)->delete();
         $this->delete();
     }
-    
+
     private function _setPropertyIdFromParts($vocab, $local_part)
     {
         $this->property_id = get_db()->getTable('RecordRelationsProperty')->findByVocabAndPropertyName($vocab, $local_part)->id;
