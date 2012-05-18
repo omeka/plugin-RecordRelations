@@ -16,7 +16,7 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         $columns = $this->getColumns();
         foreach($columns as $column) {
             if(array_key_exists($column, $params)) {
-                $select->where($this->_alias . ". $column = ? ", $params[$column]);
+                $select->where("record_relations_relations.$column = ? ", $params[$column]);
             }
         }
         return $select;
@@ -68,8 +68,8 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
             throw new Exception("subject_record_type must be passed in parameters");
         }
         $select = $this->getSelectForTargetRecords($relationParams, $targetTable, $queryOps, $subjectParams);
-        $select->join(array('rr'=>$db->RecordRelationsRelation),
-                      "rr.subject_id = {$this->_targetAlias}.id", array()
+        $select->join(array('record_relations_relations'=>$db->RecordRelationsRelation),
+                      "record_relations_relations.subject_id = {$this->_targetAlias}.id", array()
                       );
 
         return $this->findTargetRecords($select, $targetTable, $queryOps);
@@ -93,8 +93,8 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         }
         $targetTable = $db->getTable($relationParams['object_record_type']);
         $select = $this->getSelectForTargetRecords($relationParams, $targetTable, $queryOps, $objectParams);
-        $select->join(array('rr'=>$db->RecordRelationsRelation),
-                      "rr.object_id = {$this->_targetAlias}.id", array()
+        $select->join(array('record_relations_relations'=>$db->RecordRelationsRelation),
+                      "record_relations_relations.object_id = {$this->_targetAlias}.id", array()
                       );
         return $this->findTargetRecords($select, $targetTable, $queryOps);
     }
