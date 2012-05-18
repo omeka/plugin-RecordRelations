@@ -2,7 +2,6 @@
 
 class RecordRelationsRelationTable extends Omeka_Db_Table
 {
-    protected $_alias = 'rr';
     protected $_targetAlias;
 
     public function findOne($params)
@@ -16,7 +15,7 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         $columns = $this->getColumns();
         foreach($columns as $column) {
             if(array_key_exists($column, $params)) {
-                $select->where("record_relations_relations.$column = ? ", $params[$column]);
+                $select->where("$column = ? ", $params[$column]);
             }
         }
         return $select;
