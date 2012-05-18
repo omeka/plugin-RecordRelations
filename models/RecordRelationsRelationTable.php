@@ -105,7 +105,6 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         if(isset($queryOps['count']) && $queryOps['count']) {
             return $this->getDb()->fetchOne($select);
         }
-
         $targets = $targetTable->fetchObjects($select);
 
         //@TODO: might need to be moved to applyQueryOptions?
