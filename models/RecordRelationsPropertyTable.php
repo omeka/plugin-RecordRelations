@@ -3,17 +3,14 @@
 class RecordRelationsPropertyTable extends Omeka_Db_Table
 {
 
-    protected $_alias = 'rp';
-    
     public function findByVocabAndPropertyName($vocabUri, $predName) {
         $db = get_db();
         $select = $this->getSelect()
-            ->columns('rp.id')
-            ->join(array('rv' => $db->RecordRelationsVocabulary),
-                              "rv.namespace_uri = '$vocabUri'",
+            ->join(array($db->RecordRelationsVocabulary => $db->RecordRelationsVocabulary),
+                              "$db->RecordRelationsVocabulary.namespace_uri = '$vocabUri'",
                               array())
-            ->where('rp.vocabulary_id = rv.id')
-            ->where('local_part = ?', $predName);
+            ->where("vocabulary_id = $db->RecordRelationsVocabulary.id")
+            ->where("local_part = ?", $predName);
         $prop = $this->fetchObject($select);
         return $prop;
     }
