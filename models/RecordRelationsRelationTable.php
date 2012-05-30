@@ -16,7 +16,7 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         $columns = $this->getColumns();
         foreach($columns as $column) {
             if(array_key_exists($column, $params)) {
-                $select->where("$column = ? ", $params[$column]);
+                $select->where("record_relations_relations.$column = ? ", $params[$column]);
             }
         }
         return $select;
@@ -87,12 +87,12 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
 
     private function findTargetRecords($select, $queryOps = array())
     {
+
          //if it's a count query, need to execute the query a little differently and return
         if(isset($queryOps['count']) && $queryOps['count']) {
             return $this->getDb()->fetchOne($select);
         }
         $targets = $this->targetTable->fetchObjects($select);
-
         //@TODO: might need to be moved to applyQueryOptions?
         if(isset($queryOps['indexById']) && $queryOps['indexById']) {
             $returnArray = array();
@@ -126,8 +126,9 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         }
 
         $this->applySearchFilters($select, $relationParams);
+_log($select);
         $this->targetTable->applySearchFilters($select, $targetParams);
-
+_log($select);
         return $select;
 
     }
