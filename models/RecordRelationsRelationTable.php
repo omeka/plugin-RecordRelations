@@ -20,7 +20,6 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
                 $select->where("$rrrAlias.$column = ? ", $params[$column]);
             }
         }
-        _log($select);
         return $select;
     }
 
@@ -78,14 +77,16 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
     {
         $db = $this->getDb();
         $rrrAlias = $this->getTableAlias();
+        $this->targetTable = $db->getTable($relationParams['object_record_type']);
         if(!isset($relationParams['object_record_type'])) {
             throw new Exception("object_record_type must be passed in parameters");
-        }
-        $this->targetTable = $db->getTable($relationParams['object_record_type']);
+        }        
         $select = $this->getSelectForTargetRecords($relationParams, $queryOps, $objectParams);
+        _log($select);
+        _log(print_r($objectParams, true));
         $select->join(array($rrrAlias=>$db->RecordRelationsRelation),
                       "$rrrAlias.object_id = {$this->_targetAlias}.id", array()
-                      );
+                      );        
         return $this->findTargetRecords($select, $queryOps);
     }
 
@@ -95,7 +96,7 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
          //if it's a count query, need to execute the query a little differently and return
         if(isset($queryOps['count']) && $queryOps['count']) {
             return $this->getDb()->fetchOne($select);
-        }
+        }        
         $targets = $this->targetTable->fetchObjects($select);
         //@TODO: might need to be moved to applyQueryOptions?
         if(isset($queryOps['indexById']) && $queryOps['indexById']) {
@@ -125,11 +126,25 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
         if(isset($queryOps['count']) && $queryOps['count']) {
             $select = $this->targetTable->getSelectForCount();
         } else {
-            $select = $this->targetTable->getSelect();
+            $select = $this->targetTable->getSelectForFindBy($targetParams);
         }
 
+        
+        if(array_key_exists('sort_dir', $relationParams)) {
+            $sortDir = $relationParams['sort_dir'];            
+        }
+        
+        if(array_key_exists('sort_field', $relationParams)) {
+            $sortField = $relationParams['sort_field'];        
+        }
+                
+        if ($sortDir && $sortField) {
+            $this->applySorting($select, $sortField, $sortDir);
+        }        
+
         $this->applySearchFilters($select, $relationParams);
-        $this->targetTable->applySearchFilters($select, $targetParams);
+        
+        $this->targetTable->applySearchFilters($select, $targetParams);        
         return $select;
     }
 }
