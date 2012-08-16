@@ -77,16 +77,14 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
     {
         $db = $this->getDb();
         $rrrAlias = $this->getTableAlias();
-        $this->targetTable = $db->getTable($relationParams['object_record_type']);
         if(!isset($relationParams['object_record_type'])) {
             throw new Exception("object_record_type must be passed in parameters");
-        }        
+        }
+        $this->targetTable = $db->getTable($relationParams['object_record_type']);
         $select = $this->getSelectForTargetRecords($relationParams, $queryOps, $objectParams);
-        _log($select);
-        _log(print_r($objectParams, true));
         $select->join(array($rrrAlias=>$db->RecordRelationsRelation),
                       "$rrrAlias.object_id = {$this->_targetAlias}.id", array()
-                      );        
+                      );
         return $this->findTargetRecords($select, $queryOps);
     }
 
@@ -96,7 +94,7 @@ class RecordRelationsRelationTable extends Omeka_Db_Table
          //if it's a count query, need to execute the query a little differently and return
         if(isset($queryOps['count']) && $queryOps['count']) {
             return $this->getDb()->fetchOne($select);
-        }        
+        }
         $targets = $this->targetTable->fetchObjects($select);
         //@TODO: might need to be moved to applyQueryOptions?
         if(isset($queryOps['indexById']) && $queryOps['indexById']) {
