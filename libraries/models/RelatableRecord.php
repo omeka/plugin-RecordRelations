@@ -120,7 +120,7 @@ abstract class RelatableRecord extends Omeka_Record {
 	    $params = array();
 	    $params['subject_record_type'] = $this->subject_record_type;
 	    $params['object_record_type'] = $this->object_record_type;
-	    $params['property_id'] = record_relations_property_id($this->namespace, $this->local_part);
+	    $params['property_id'] = get_record_relations_property_id($this->namespace, $this->local_part);
 	    if($this->_isSubject) {
 	        $params['subject_id'] = $this->id;
 	    } else {

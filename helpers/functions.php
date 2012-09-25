@@ -3,9 +3,11 @@
 /**
  * Look up a property id by namespace and local_part
  *
+ * @param string $namespace the namespace uri
+ * @param string $local_part the local name
  */
 
-function record_relations_property_id($namespace, $local_part)
+function get_record_relations_property_id($namespace, $local_part)
 {
 
     $prop = get_db()->getTable('RecordRelationsProperty')->findByVocabAndPropertyName($namespace, $local_part);
@@ -17,7 +19,7 @@ function record_relations_property_id($namespace, $local_part)
 /**
  *
  * Install vocabularies and properties
- * @param $data
+ * @param array $data
  *
  * $data looks like:
  * <code>
@@ -75,6 +77,10 @@ function record_relations_install_properties($data) {
     }
 }
 
+/**
+ * Delete relations from the relations table (NOT the target subject or object tables)
+ * @param array $params
+ */
 
 function record_relations_delete_relations($params)
 {

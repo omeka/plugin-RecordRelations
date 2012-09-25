@@ -1,16 +1,8 @@
 <?php
 
-//define some prefixes/namespaces
-define('SIOC', 'http://rdfs.org/sioc/ns#');
-define('FOAF', 'http://xmlns.org/foaf/0.1/');
-define('DCTERMS', 'http://purl.org/dc/terms/');
-define('BIBO', 'http://purl.org/ontology/bibo/');
-define('FRBR', 'http://purl.org/vocab/frbr/core#');
-define('OMEKA', 'http://omeka.org/vocab/');
 
-define('RECORD_RELATIONS_PLUGIN_DIR', dirname(__FILE__));
 
-class RecordRelationsPlugin extends Omeka_Plugin_Abstract
+class RecordRelationsPlugin extends Omeka_Plugin_AbstractPlugin
 {
 
     protected $_hooks = array('install', 'uninstall');

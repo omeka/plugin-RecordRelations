@@ -1,6 +1,6 @@
 <?php
 
-class RecordRelationsPropertyTable extends Omeka_Db_Table
+class Table_RecordRelationsProperty extends Omeka_Db_Table
 {
 
     public function findByVocabAndPropertyName($vocabUri, $predName) {

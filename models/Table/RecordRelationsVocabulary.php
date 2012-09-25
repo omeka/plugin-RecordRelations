@@ -1,7 +1,7 @@
 <?php
 
 
-class RecordRelationsVocabularyTable extends Omeka_Db_Table
+class Table_RecordRelationsVocabulary extends Omeka_Db_Table
 {
     public function findByVocabularyUri($vocabUri)
     {

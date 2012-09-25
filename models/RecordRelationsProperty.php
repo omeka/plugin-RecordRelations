@@ -1,5 +1,5 @@
 <?php
-class RecordRelationsProperty extends Omeka_Record
+class RecordRelationsProperty extends Omeka_Record_AbstractRecord
 {
     public $id;
     public $vocabulary_id;

@@ -1,6 +1,6 @@
 <?php
 
-class RecordRelationsRelationTable extends Omeka_Db_Table
+class Table_RecordRelationsRelation extends Omeka_Db_Table
 {
     protected $_targetAlias;
     protected $targetTable;
