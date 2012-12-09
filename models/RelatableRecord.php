@@ -1,6 +1,6 @@
 <?php
 require_once(PLUGIN_DIR . '/RecordRelations/models/RecordRelationsRelation.php');
-abstract class RelatableRecord extends Omeka_Record {
+abstract class RelatableRecord extends Omeka_Record_AbstractRecord {
 
     private $_relation;
     protected $property_id;

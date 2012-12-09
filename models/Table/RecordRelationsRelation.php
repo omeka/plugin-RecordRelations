@@ -3,11 +3,11 @@
 class Table_RecordRelationsRelation extends Omeka_Db_Table
 {
     protected $_targetAlias;
-    protected $targetTable;
+    protected $_targetTable;
 
     public function findOne($params)
     {
-        $select = $this->getSelectForFindBy($params);
+        $select = $this->_getSelectForFindBy($params);
         return $this->fetchObject($select);
     }
 
@@ -50,18 +50,21 @@ class Table_RecordRelationsRelation extends Omeka_Db_Table
 
     public function findSubjectRecordsByParams($relationParams, $queryOps= array(), $subjectParams = array())
     {
-        $db = $this->getDb();
-        $rrrAlias = $this->getTableAlias();
-        $this->targetTable = $db->getTable($relationParams['subject_record_type']);
         if(!isset($relationParams['subject_record_type'])) {
             throw new Exception("subject_record_type must be passed in parameters");
         }
-        $select = $this->getSelectForTargetRecords($relationParams, $queryOps, $subjectParams);
+        
+        $db = $this->getDb();
+        $rrrAlias = $this->getTableAlias();
+        $this->_targetTable = $db->getTable($relationParams['subject_record_type']);
+
+        $this->_setTargetTable($relationParams['subject_record_type']);
+        $select = $this->_getSelectForTargetRecords($relationParams, $queryOps, $subjectParams);
         $select->join(array($rrrAlias=>$db->RecordRelationsRelation),
                       "$rrrAlias.subject_id = {$this->_targetAlias}.id", array()
                       );
 
-        return $this->findTargetRecords($select, $queryOps);
+        return $this->_findTargetRecords($select, $queryOps);
     }
 
     /**
@@ -75,27 +78,74 @@ class Table_RecordRelationsRelation extends Omeka_Db_Table
 
     public function findObjectRecordsByParams($relationParams, $queryOps=array(), $objectParams=array())
     {
-        $db = $this->getDb();
-        $rrrAlias = $this->getTableAlias();
+
         if(!isset($relationParams['object_record_type'])) {
             throw new Exception("object_record_type must be passed in parameters");
         }
-        $this->targetTable = $db->getTable($relationParams['object_record_type']);
-        $select = $this->getSelectForTargetRecords($relationParams, $queryOps, $objectParams);
+        
+        $db = $this->getDb();
+        $rrrAlias = $this->getTableAlias();
+
+        $this->_setTargetTable($relationParams['object_record_type']);
+        $select = $this->_getSelectForTargetRecords($relationParams, $queryOps, $objectParams);
         $select->join(array($rrrAlias=>$db->RecordRelationsRelation),
                       "$rrrAlias.object_id = {$this->_targetAlias}.id", array()
                       );
-        return $this->findTargetRecords($select, $queryOps);
+        return $this->_findTargetRecords($select, $queryOps);
     }
 
-    private function findTargetRecords($select, $queryOps = array())
+    public function countObjectRecordsByParams($relationParams, $queryOps=array(), $objectParams=array()) 
     {
-
+        if(!isset($relationParams['object_record_type'])) {
+            throw new Exception("object_record_type must be passed in parameters");
+        }
+        
+        $db = $this->getDb();
+        $rrrAlias = $this->getTableAlias();
+        $this->_setTargetTable($relationParams['object_record_type']);        
+        $select = $this->_getSelectForCountTargetRecords($relationParams, $queryOps, $objectParams);
+        $select->join(array($rrrAlias=>$db->RecordRelationsRelation),
+                        "$rrrAlias.object_id = {$this->_targetAlias}.id", array()
+        );
+        $result = $db->fetchOne($select);
+        return $result;
+    }
+    
+    public function countSubjectRecordsByParams($relationParams, $queryOps=array(), $objectParams=array())
+    {
+        if(!isset($relationParams['subject_record_type'])) {
+            throw new Exception("subject_record_type must be passed in parameters");
+        }
+        
+        $db = $this->getDb();
+        $rrrAlias = $this->getTableAlias();
+        $this->_setTargetTable($relationParams['subject_record_type']);
+        $select = $this->_getSelectForCountTargetRecords($relationParams, $queryOps, $objectParams);
+        $select->join(array($rrrAlias=>$db->RecordRelationsRelation),
+                        "$rrrAlias.subject_id = {$this->_targetAlias}.id", array()
+        );
+        debug($select);
+        $result = $db->fetchOne($select);
+        debug(print_r($result, true));
+        return $result;        
+    }
+    
+    private function _getSelectForCountTargetRecords($relationParams, $queryOps, $targetParams)
+    {
+        $select = $this->_targetTable->getSelectForCount($targetParams);
+        $this->applySearchFilters($select, $relationParams);
+        
+        return $select;
+    }
+    
+    private function _findTargetRecords($select, $queryOps = array())
+    {
          //if it's a count query, need to execute the query a little differently and return
         if(isset($queryOps['count']) && $queryOps['count']) {
-            return $this->getDb()->fetchOne($select);
+           // throw new Exception('old code calling RecordRelations query');
+           debug('old RR code');   
         }
-        $targets = $this->targetTable->fetchObjects($select);
+        $targets = $this->_targetTable->fetchObjects($select);
         //@TODO: might need to be moved to applyQueryOptions?
         if(isset($queryOps['indexById']) && $queryOps['indexById']) {
             $returnArray = array();
@@ -105,6 +155,12 @@ class Table_RecordRelationsRelation extends Omeka_Db_Table
             return $returnArray;
         }
         return $targets;
+    }
+    
+    private function _setTargetTable($tableName)
+    {
+        $this->_targetTable = $this->getDb()->getTable($tableName);
+        $this->_targetAlias = $this->_targetTable->getTableAlias();
     }
 
     /**
@@ -116,17 +172,12 @@ class Table_RecordRelationsRelation extends Omeka_Db_Table
      * @param string $targetType The target table name (either subject or object record type)
      */
 
-    private function getSelectForTargetRecords($relationParams, $queryOps = array(), $targetParams = array() )
+    private function _getSelectForTargetRecords($relationParams, $queryOps = array(), $targetParams = array() )
     {
         $db = $this->getDb();
-        $this->_targetAlias = $this->targetTable->getTableAlias();
-        //need to get the select here based on whether it is for count
-        if(isset($queryOps['count']) && $queryOps['count']) {
-            $select = $this->targetTable->getSelectForCount();
-        } else {
-            $select = $this->targetTable->getSelectForFindBy($targetParams);
-        }
-
+        
+        $select = $this->_targetTable->getSelectForFindBy($targetParams);
+        
         
         if(array_key_exists('sort_dir', $relationParams)) {
             $sortDir = $relationParams['sort_dir'];            
@@ -136,13 +187,13 @@ class Table_RecordRelationsRelation extends Omeka_Db_Table
             $sortField = $relationParams['sort_field'];        
         }
                 
-        if ($sortDir && $sortField) {
+        if (isset($sortDir) && isset($sortField)) {
             $this->applySorting($select, $sortField, $sortDir);
         }        
 
         $this->applySearchFilters($select, $relationParams);
         
-        $this->targetTable->applySearchFilters($select, $targetParams);        
+        //$this->_targetTable->applySearchFilters($select, $targetParams);        
         return $select;
     }
 }

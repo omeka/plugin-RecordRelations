@@ -1,6 +1,6 @@
 <?php
 
-class RecordRelationsVocabulary extends Omeka_Record
+class RecordRelationsVocabulary extends Omeka_Record_AbstractRecord
 {
     public $id;
     public $name;

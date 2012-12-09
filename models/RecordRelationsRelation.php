@@ -1,5 +1,5 @@
 <?php
-class RecordRelationsRelation extends Omeka_Record
+class RecordRelationsRelation extends Omeka_Record_AbstractRecord
 {
     public $id;
     public $subject_id;
