@@ -124,9 +124,7 @@ class Table_RecordRelationsRelation extends Omeka_Db_Table
         $select->join(array($rrrAlias=>$db->RecordRelationsRelation),
                         "$rrrAlias.subject_id = {$this->_targetAlias}.id", array()
         );
-        debug($select);
-        $result = $db->fetchOne($select);
-        debug(print_r($result, true));
+        $result = $db->fetchOne($select);        
         return $result;        
     }
     
@@ -139,12 +137,7 @@ class Table_RecordRelationsRelation extends Omeka_Db_Table
     }
     
     private function _findTargetRecords($select, $queryOps = array())
-    {
-         //if it's a count query, need to execute the query a little differently and return
-        if(isset($queryOps['count']) && $queryOps['count']) {
-           // throw new Exception('old code calling RecordRelations query');
-           debug('old RR code');   
-        }
+    {         
         $targets = $this->_targetTable->fetchObjects($select);
         //@TODO: might need to be moved to applyQueryOptions?
         if(isset($queryOps['indexById']) && $queryOps['indexById']) {
