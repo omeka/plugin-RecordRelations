@@ -1,5 +1,6 @@
 <?php
 require_once(PLUGIN_DIR . '/RecordRelations/models/RecordRelationsRelation.php');
+
 abstract class RelatableRecord extends Omeka_Record_AbstractRecord {
 
     private $_relation;
@@ -90,7 +91,7 @@ abstract class RelatableRecord extends Omeka_Record_AbstractRecord {
         return $propertyRecord->id;
     }
 
-    protected function beforeSave()
+    protected function beforeSave($args)
     {
         //There's not a good way to avoid creating the relation in construct, so
         //here unset it if the record, and hence the relation, already exist
@@ -99,7 +100,7 @@ abstract class RelatableRecord extends Omeka_Record_AbstractRecord {
         }
     }
 
-    protected function afterSave()
+    protected function afterSave($args)
     {
         if(!empty($this->_relation)) {
             if($this->_isSubject) {
