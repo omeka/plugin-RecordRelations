@@ -113,6 +113,7 @@ abstract class RelatableRecord extends Omeka_Record_AbstractRecord {
             }
             $this->_relation->save();
         }
+        parent::afterSave($args);
     }
 
     /**
