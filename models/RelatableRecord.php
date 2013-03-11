@@ -41,11 +41,6 @@ abstract class RelatableRecord extends Omeka_Record_AbstractRecord {
         $relationsArray['subject_record_type'] = $this->subject_record_type;
         $relationsArray['object_record_type'] = $this->object_record_type;
         $relationsArray['property_id'] = $this->property_id;
-        $user = current_user();
-        if($user) {
-            $relationsArray['user_id'] = $user->id;
-        }
-        
         return $relationsArray;
     }
 
