@@ -7,7 +7,7 @@ class Table_RecordRelationsRelation extends Omeka_Db_Table
 
     public function findOne($params)
     {
-        $select = $this->_getSelectForFindBy($params);
+        $select = $this->getSelectForFindBy($params);
         return $this->fetchObject($select);
     }
 

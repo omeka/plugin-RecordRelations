@@ -23,7 +23,7 @@ class RecordRelationsRelation extends Omeka_Record_AbstractRecord
         }
     }
 
-    public function save()
+    public function save($throwIfInvalid = true)
     {
         //check to see if the triple already exists, from the same user
         if(empty($this->user_id)) {
