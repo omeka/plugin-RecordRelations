@@ -183,7 +183,8 @@ class Table_RecordRelationsRelation extends Omeka_Db_Table
         if (isset($sortDir) && isset($sortField)) {
             $this->applySorting($select, $sortField, $sortDir);
         }        
-
+        
+        $this->applyQueryOptions($select, $queryOps);
         $this->applySearchFilters($select, $relationParams);
         
         //$this->_targetTable->applySearchFilters($select, $targetParams);        
