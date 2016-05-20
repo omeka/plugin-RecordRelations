@@ -57,7 +57,7 @@ class RecordRelationsPlugin extends Omeka_Plugin_AbstractPlugin
             `object_id` INT( 10 ) UNSIGNED NOT NULL ,
             `subject_record_type` TINYTEXT NOT NULL ,
             `object_record_type` TINYTEXT NOT NULL ,
-            `timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
+            `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
             `user_id` INT( 10 ) UNSIGNED NOT NULL,
             `public` INT( 1 ) UNSIGNED DEFAULT 1
             ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_unicode_ci;
