@@ -18,7 +18,7 @@ define('RECORD_RELATIONS_PLUGIN_DIR', dirname(__FILE__));
 class RecordRelationsPlugin extends Omeka_Plugin_AbstractPlugin
 {
 
-    protected $_hooks = array('install', 'uninstall');
+    protected $_hooks = array('install', 'uninstall', 'upgrade');
 
 
     public function hookInstall()
@@ -68,6 +68,18 @@ class RecordRelationsPlugin extends Omeka_Plugin_AbstractPlugin
         $formalVocabularies = include RECORD_RELATIONS_PLUGIN_DIR . '/formal_vocabularies.php';
         record_relations_install_properties($formalVocabularies);
 
+    }
+
+    public function hookUpgrade($args)
+    {
+        $old = $args['old_version'];
+        $new = $args['new_version'];
+
+        if (version_compare($old, '2.0.1', '<')) {
+            $db = get_db();
+            $sql = "ALTER TABLE `$db->RecordRelationsRelation`  CHANGE `timestamp` `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ";
+            $db->query($sql);
+        }
     }
 
     public function hookUninstall()
